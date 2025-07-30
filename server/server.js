@@ -38,12 +38,12 @@ app.use('/api/movies', movieRoutes);
 app.use(errorHandler);
 
 // Serve static files in production (optional)
-if (process.env.NODE_ENV === 'production') {
+/* if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
-}
+} */
 
 // Start the server
 const PORT = process.env.PORT || 5000;
