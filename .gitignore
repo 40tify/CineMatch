@@ -57,3 +57,4 @@ server/coverage/ # If you add testing with coverage reports
 *.7z
 *.dmg
 *.iso
+CineMatch.code-workspace
