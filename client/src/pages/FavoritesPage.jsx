@@ -32,6 +32,9 @@ function FavoritesPage({ navigate }) {
     setFavoriteIds(favoriteIds.filter(id => id !== movie.id));
   };
 
+  if (!user) {
+    return <div className="text-center text-red-400 mt-8">You must be logged in to view your favorites.</div>;
+  }
   return (
     <div className="container mx-auto py-6">
       <h2 className="text-2xl font-bold text-yellow-400 mb-6 text-center">My Favorites</h2>

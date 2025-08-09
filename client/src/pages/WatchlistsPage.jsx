@@ -24,6 +24,10 @@ function WatchlistsPage({ navigate }) {
     if (user) fetchWatchlists();
   }, [user]);
 
+  if (!user) {
+    return <div className="text-center text-red-400 mt-8">You must be logged in to view your watchlists.</div>;
+  }
+
   // Handle create/edit form submit
   const handleSubmit = async (e) => {
     e.preventDefault();

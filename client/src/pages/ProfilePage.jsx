@@ -33,6 +33,9 @@ function ProfilePage({ navigate }) {
     }
   };
 
+  if (!user) {
+    return <div className="text-center text-red-400 mt-8">You must be logged in to view your profile.</div>;
+  }
   if (!profile) return <div className="text-center text-gray-400 mt-8">Loading...</div>;
 
   return (

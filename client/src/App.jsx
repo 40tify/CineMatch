@@ -1,4 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -12,80 +13,48 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import { AuthContextProvider, AuthContext } from './context/AuthContext';
 
 // Main App component
-function App({ initialPage = 'home', initialResetToken = null }) {
-  // State to manage current page for simple routing
-  const [page, setPage] = useState(initialPage);
-  // State to hold selected movie ID for detail view
-  const [selectedMovieId, setSelectedMovieId] = useState(null);
-  // Add state for reset password token
-  const [resetToken, setResetToken] = useState(initialResetToken);
-
-  // On mount, set page/resetToken if provided by props (for deep link)
-  useEffect(() => {
-    if (initialPage) setPage(initialPage);
-    if (initialResetToken) setResetToken(initialResetToken);
-  }, [initialPage, initialResetToken]);
-
-  // Access authentication state from context
+function AppContent() {
   const { user, logout } = useContext(AuthContext) || {};
+  const navigate = useNavigate();
 
-  // Modified navigate to handle reset password links and logout
-  const navigate = (to, param = null) => {
-    if (to === 'resetPassword') {
-      setResetToken(param); // param is the token
-      setPage('resetPassword');
-    } else if (to === 'logout') {
-      // Handle logout
-      logout();
-      setPage('login');
-      setSelectedMovieId(null);
-      setResetToken(null);
-    } else {
-      setPage(to);
-      setSelectedMovieId(param);
-    }
-  };
+  // Helper for protected routes
+  function RequireAuth({ children }) {
+    return user ? children : <Navigate to="/login" replace />;
+  }
 
-  // Render the correct page based on current state
-  const renderPage = () => {
-    switch (page) {
-      case 'home':
-        return <HomePage navigate={navigate} />;
-      case 'login':
-        return <LoginPage navigate={navigate} />;
-      case 'register':
-        return <RegisterPage navigate={navigate} />;
-      case 'profile':
-        return user ? <ProfilePage navigate={navigate} /> : <LoginPage navigate={navigate} />;
-      case 'favorites':
-        return user ? <FavoritesPage navigate={navigate} /> : <LoginPage navigate={navigate} />;
-      case 'watchlists':
-        return user ? <WatchlistsPage navigate={navigate} /> : <LoginPage navigate={navigate} />;
-      case 'movieDetail':
-        return <MovieDetailPage movieId={selectedMovieId} navigate={navigate} />;
-      case 'forgotPassword':
-        return <ForgotPasswordPage navigate={navigate} />;
-      case 'resetPassword':
-        return <ResetPasswordPage token={resetToken} navigate={navigate} />;
-      case 'logout':
-        // This case is handled in navigate, so just show LoginPage
-        return <LoginPage navigate={navigate} />;
-      default:
-        return <HomePage navigate={navigate} />;
-    }
-  };
+  // For ResetPassword route
+  function ResetPasswordWrapper() {
+    const { token } = useParams();
+    return <ResetPasswordPage token={token} navigate={navigate} />;
+  }
 
   return (
-    // Provide authentication context to the entire app
+    <div className="min-h-screen flex flex-col bg-gray-950 text-gray-100">
+      <Navbar navigate={navigate} />
+      <main className="flex-1 container mx-auto px-2 sm:px-4 py-4">
+        <Routes>
+          <Route path="/" element={<HomePage navigate={navigate} />} />
+          <Route path="/login" element={<LoginPage navigate={navigate} />} />
+          <Route path="/register" element={<RegisterPage navigate={navigate} />} />
+          <Route path="/profile" element={<RequireAuth><ProfilePage navigate={navigate} /></RequireAuth>} />
+          <Route path="/favorites" element={<RequireAuth><FavoritesPage navigate={navigate} /></RequireAuth>} />
+          <Route path="/watchlists" element={<RequireAuth><WatchlistsPage navigate={navigate} /></RequireAuth>} />
+          <Route path="/movie/:movieId" element={<MovieDetailPage navigate={navigate} />} />
+          <Route path="/forgotPassword" element={<ForgotPasswordPage navigate={navigate} />} />
+          <Route path="/resetPassword/:token" element={<ResetPasswordWrapper />} />
+          <Route path="*" element={<HomePage navigate={navigate} />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <AuthContextProvider>
-      <div className="min-h-screen flex flex-col bg-gray-950 text-gray-100">
-        {/* Navbar is always visible and receives navigation props */}
-        <Navbar navigate={navigate} user={user} />
-        {/* Main content area */}
-        <main className="flex-1 container mx-auto px-2 sm:px-4 py-4">
-          {renderPage()}
-        </main>
-      </div>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </AuthContextProvider>
   );
 }
